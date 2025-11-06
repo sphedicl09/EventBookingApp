@@ -21,6 +21,12 @@ Before running the app, make sure you have:
    ```bash
    mvn -v
 
+4. **Supabase Account**
+   * Free-tier is enough
+
+5. **Gmail Account (for sending tickets)**
+   * You will need to generate a 16-character **App Password**
+
 ---
 
 ## Cloning the Project
@@ -34,10 +40,75 @@ cd Cluster-Buster-EventBookingApp
 
 ---
 
+## Backend & Environment Setup
+
+This app **will not run** without setting up the backend database and environment variables.
+
+1. **Supabase Database Setup**
+   
+   1. **Create a Project:** Go to [Supabase](https://supabase.com/) and create a new project.
+      
+   3. **Get API Keys:** Go to `Project Settings → API`. You will need two values:
+      
+      * The **Project URL**
+      * The `anon` **public API Key**
+        
+   5. **Create Tables:** Go to the `SQL Editor` in your Supabase project and run the following script to create the `events` and `tickets` tables:
+      ```bash
+      -- Create the 'events' table
+      create table public.events (
+        events_id uuid not null default gen_random_uuid (),
+        name text null,
+        capacity numeric null,
+        created_at timestamp with time zone not null default now(), -- Auto-fills the creation time
+        constraint events_pkey primary key (events_id)
+      );
+      
+      -- Create the 'tickets' table
+      create table public.tickets (
+        tickets_id uuid not null default gen_random_uuid (),
+        events_id uuid null, -- This is the foreign key
+        attendee_name text null,
+        email text null,
+        ticket_code text null,
+        created_at timestamp with time zone not null default now(), -- Auto-fills the creation time
+        constraint tickets_pkey primary key (tickets_id),
+        constraint tickets_events_id_fkey foreign key (events_id) references events (events_id) on delete cascade -- Deletes tickets if event is deleted
+      );
+      ```
+   6. **Set Security Policies (RLS):** By default, your tables are read-only. You must enable `INSERT` for the app to work.
+      
+      * Go to `Authentication → Policies`.  
+      * On the `events table`, click **New Policy → "Enable INSERT access for all users" → Review → Save**.
+      * Do the ***exact same thing*** for the `tickets` table: **New Policy → "Enable INSERT access for all users"**.
+     
+2. **Email Service (Gmail) Setup**
+
+   This app uses a Gmail account to send ticket confirmation emails.
+
+     1. **Enable 2-Step Verification:** Go to your Google Account settings → **Security** and turn on 2-Step Verification.
+  
+     2. **Generate App Password:** On the same **Security** page, go to **App Passwords**.
+
+        * Select app: **"Other (Custom name...)"**
+        * Name it: `JavaFX Event App`
+        * Google will give you a **16-character password**. Copy this.
+
+      3. **Update Code:** Open the file `src/main/java/com/eventbooking/eventbookingapp/util/EmailSender.java`.
+
+         * Change `APP_PASSWORD` to the 16-character password you just generated.
+         * Change `SENDER_EMAIL` to your Gmail address. 
+         ```bash
+         // In EmailSender.java
+         private static final String SENDER_EMAIL = "your-email@gmail.com";
+         private static final String APP_PASSWORD = "your-16-character-app-password";
+         ```
+---
+
 ## Setting Up in IntelliJ IDEA
 
 1. **Open the Project**  
-   * Go to `File → Open → Select the Cluster-Buster-EventBookingApp` folder.  
+   * Go to `File → Open → Select the EventBookingApp` folder.  
    * If prompted, import as a Maven project.
 
 2. **Add JavaFX SDK**  
@@ -52,6 +123,10 @@ cd Cluster-Buster-EventBookingApp
    * VM options (replace `/path/to/javafx-sdk-21/lib` with your actual JavaFX path):  
    ```bash
    --module-path /path/to/javafx-sdk-21/lib --add-modules javafx.controls,javafx.fxml
+   ```
+   * **Environment Variables:** This is essential for Supabase. Click the `[...]` icon next to "Environment variables" and add two:
+     * `SUPABASE_URL`: Paste your Project URL here.
+     * `SUPABASE_KEY`: Paste your `anon` public API Key here.
 
 4. **Install Maven Dependencies**
     ```bash
@@ -61,10 +136,26 @@ cd Cluster-Buster-EventBookingApp
 
 ## Running the App
 
-Run `Main.java` in IntelliJ, or use Maven:
-  ```bash
-  mvn clean javafx:run
-  ```
+You can now run the Main.java file in IntelliJ.
+
+If you run with Maven, you must set the environment variables in your terminal first:
+```bash
+# Windows (Command Prompt)
+set SUPABASE_URL=your-url
+set SUPABASE_KEY=your-key
+mvn clean javafx:run
+
+# Windows (PowerShell)
+$env:SUPABASE_URL="your-url"
+$env:SUPABASE_KEY="your-key"
+mvn clean javafx:run
+
+# macOS/Linux
+export SUPABASE_URL=your-url
+export SUPABASE_KEY=your-key
+mvn clean javafx:run
+```
+
 ---
 
 ## App Overview

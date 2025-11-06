@@ -28,7 +28,7 @@ Before running the app, make sure you have:
 Clone the repository to your local machine:
 
 ```bash
-git clone https://github.com/sphedicl09/Cluster-Buster-EventBookingApp.git
+git clone https://github.com/sphedicl09/EventBookingApp.git
 cd Cluster-Buster-EventBookingApp
 ```
 

@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.ListView?>
+<?import javafx.scene.control.ToolBar?>
+<?import javafx.scene.layout.BorderPane?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.Pane?>
+<?import javafx.scene.layout.VBox?>
+
+<BorderPane prefHeight="565.0" prefWidth="627.0" xmlns="http://javafx.com/javafx/25" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.eventbooking.eventbookingapp.controller.AttendeeController">
+
+    <top>
+        <ToolBar>
+            <Label style="-fx-font-size: 18px; -fx-font-weight: bold;" text="🎫 Attendee View" />
+            <Pane HBox.hgrow="ALWAYS" />
+            <Button onAction="#switchToOrganizer" text="Back to Organizer" />
+        </ToolBar>
+    </top>
+
+    <center>
+        <VBox alignment="CENTER" prefHeight="375.0" prefWidth="279.0" spacing="15">
+            <Label style="-fx-font-size: 16px;" text="Welcome, Attendee!" />
+            <ListView fx:id="eventList" prefHeight="369.0" prefWidth="627.0" />
+            <!-- Buttons placed side-by-side inside an HBox -->
+            <HBox alignment="CENTER" spacing="10">
+                <Button onAction="#openBookingDialog" text="Book Now" />
+                <Button text="My Bookings" />
+            </HBox>
+        </VBox>
+    </center>
+</BorderPane>

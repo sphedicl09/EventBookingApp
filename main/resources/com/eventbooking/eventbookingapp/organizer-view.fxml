@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.ListView?>
+<?import javafx.scene.control.ToolBar?>
+<?import javafx.scene.control.Tooltip?>
+<?import javafx.scene.layout.BorderPane?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.Pane?>
+<?import javafx.scene.layout.VBox?>
+
+<BorderPane xmlns="http://javafx.com/javafx/25" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.eventbooking.eventbookingapp.controller.OrganizerController">
+
+    <top>
+        <ToolBar>
+            <Label style="-fx-font-size: 18px; -fx-font-weight: bold;" text="🎟 Organizer Dashboard" />
+            <Pane HBox.hgrow="ALWAYS" />
+            <Button onAction="#switchToAttendee" text="Attendee View" />
+        </ToolBar>
+    </top>
+
+    <center>
+        <!-- Split center into a list of events on the left and actions on the right -->
+        <HBox alignment="CENTER" spacing="20" style="-fx-padding: 20;">
+            <ListView fx:id="eventsListView" prefWidth="320.0" />
+
+            <VBox alignment="CENTER" prefHeight="0.0" prefWidth="194.0" spacing="15">
+                <Label style="-fx-font-size: 16px;" text="Organizer Actions" />
+                <Button fx:id="createEventBtn" onAction="#openCreateEventDialog" text="Create Event">
+                    <tooltip>
+                        <Tooltip text="Open a dialog to create a new event (name + capacity)" />
+                    </tooltip>
+                </Button>
+                <Button fx:id="capacityWarningBtn" onAction="#openCapacityWarningDialog" text="Send Capacity Warning">
+                    <tooltip>
+                        <Tooltip text="Show a capacity warning dialog when an event is full" />
+                    </tooltip>
+                </Button>
+                <Button fx:id="eventEndingBtn" onAction="#openEventEndingDialog" prefWidth="194.0" text="Send Event End Warning">
+                    <tooltip>
+                        <Tooltip text="Show a confirmation dialog for events ending soon" />
+                    </tooltip>
+                </Button>
+
+                <Label fx:id="selectedEventDetails" text="Select an event to see details" wrapText="true" />
+            </VBox>
+        </HBox>
+    </center>
+</BorderPane>

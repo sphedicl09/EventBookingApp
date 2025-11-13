@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.ListView?>
+<?import javafx.scene.layout.VBox?>
+<?import javafx.scene.text.Font?>
+
+<VBox alignment="CENTER" spacing="10"
+      xmlns:fx="http://javafx.com/fxml/1"
+      xmlns="http://javafx.com/javafx/21"
+      fx:controller="com.eventbooking.eventbookingapp.controller.AttendeeListDialogController">
+    <padding>
+        <Insets top="10" right="20" bottom="20" left="20"/>
+    </padding>
+
+    <Label fx:id="eventNameLabel" text="Attendees for: Event Name">
+        <font>
+            <Font name="System Bold" size="16.0" />
+        </font>
+    </Label>
+    <ListView fx:id="attendeeListView" prefHeight="250" prefWidth="350" />
+
+</VBox>

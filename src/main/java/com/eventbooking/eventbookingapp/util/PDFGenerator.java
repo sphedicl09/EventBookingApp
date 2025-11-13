@@ -5,23 +5,31 @@ import com.itextpdf.text.*;
 import com.itextpdf.text.pdf.PdfPCell;
 import com.itextpdf.text.pdf.PdfPTable;
 import com.itextpdf.text.pdf.PdfWriter;
+
+import java.io.File;
 import java.io.FileOutputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.List;
 
 public class PDFGenerator {
 
-    public static String generateTicketPDF(Ticket ticket) throws Exception {
+    public static String generateTicketPDF(List<Ticket> tickets) throws Exception {
+        if (tickets == null || tickets.isEmpty()) {
+            throw new IllegalArgumentException("Ticket list cannot be empty.");
+        }
+
+        Ticket firstTicket = tickets.get(0);
         Path outputDir = Path.of(System.getProperty("user.home"), "EventTickets");
         if (!Files.exists(outputDir)) {
             Files.createDirectories(outputDir);
         }
 
-        String filename = ticket.getAttendeeName().replaceAll("\\s+", "_")
-                + "_" + ticket.getEventName().replaceAll("\\s+", "_")
-                + "_Ticket.pdf";
+        String filename = firstTicket.getAttendeeName().replaceAll("\\s+", "_")
+                + "_" + firstTicket.getEventName().replaceAll("\\s+", "_")
+                + "_Tickets.pdf";
         Path outputFile = outputDir.resolve(filename);
 
         Document document = new Document();
@@ -29,33 +37,67 @@ public class PDFGenerator {
         document.open();
 
         Font titleFont = new Font(Font.FontFamily.HELVETICA, 22, Font.BOLD);
-        Paragraph title = new Paragraph("🎫 Event Ticket", titleFont);
+        String titleText = (tickets.size() > 1) ?
+                "🎫 Your " + tickets.size() + " Event Tickets" :
+                "🎫 Event Ticket";
+        Paragraph title = new Paragraph(titleText, titleFont);
         title.setAlignment(Element.ALIGN_CENTER);
         document.add(title);
         document.add(Chunk.NEWLINE);
 
-        PdfPTable table = new PdfPTable(2);
-        table.setWidthPercentage(100);
-        table.setSpacingBefore(10f);
+        int ticketNum = 1;
+        for (Ticket ticket : tickets) {
 
-        addRow(table, "Event Name:", ticket.getEventName());
-        addRow(table, "Attendee Name:", ticket.getAttendeeName());
-        addRow(table, "Email:", ticket.getEmail());
-        addRow(table, "Ticket ID:", ticket.getTicketId());
-        addRow(table, "Issued On:", LocalDateTime.now()
-                .format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")));
+            Font stubTitleFont = new Font(Font.FontFamily.HELVETICA, 16, Font.BOLD);
+            Paragraph stubTitle = new Paragraph("Ticket " + ticketNum + " of " + tickets.size() +
+                    " (" + ticket.getEventName() + ")", stubTitleFont);
+            stubTitle.setSpacingBefore(10f);
+            document.add(stubTitle);
 
-        document.add(table);
+            PdfPTable table = new PdfPTable(2);
+            table.setWidthPercentage(100);
+            table.setSpacingBefore(10f);
+            table.setSpacingAfter(10f);
+
+            addRow(table, "Attendee:", ticket.getAttendeeName());
+            addRow(table, "Email:", ticket.getEmail());
+            addRow(table, "Ticket ID:", ticket.getTicketId());
+            addRow(table, "Issued On:", LocalDateTime.now()
+                    .format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")));
+
+            document.add(table);
+
+            String qrCodePath = QRCodeGenerator.generateQRCode(
+                    ticket.getTicketId(),
+                    "ticket_qr_" + ticket.getTicketId()
+            );
+
+            Image qrImage = Image.getInstance(qrCodePath);
+            qrImage.scaleToFit(100, 100);
+            qrImage.setAlignment(Element.ALIGN_CENTER);
+
+            document.add(qrImage);
+
+            new File(qrCodePath).delete();
+
+            if (ticketNum < tickets.size()) {
+                Paragraph separator = new Paragraph("------------------------------------------------------");
+                separator.setAlignment(Element.ALIGN_CENTER);
+                document.add(separator);
+            }
+
+            ticketNum++;
+        }
+
         document.add(Chunk.NEWLINE);
-
-        Paragraph note = new Paragraph("Please present this ticket upon entry.", new Font(Font.FontFamily.HELVETICA, 12, Font.ITALIC));
+        Paragraph note = new Paragraph("Please present this ticket upon entry.",
+                new Font(Font.FontFamily.HELVETICA, 12, Font.ITALIC));
         note.setAlignment(Element.ALIGN_CENTER);
         document.add(note);
 
         document.close();
 
-        System.out.println("Ticket PDF generated: " + outputFile.toAbsolutePath());
-
+        System.out.println("Multi-ticket PDF generated: " + outputFile.toAbsolutePath());
         return outputFile.toString();
     }
 

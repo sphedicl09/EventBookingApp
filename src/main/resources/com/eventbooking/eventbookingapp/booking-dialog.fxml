@@ -4,9 +4,13 @@
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
 
-<VBox spacing="10" padding="20"
+<VBox spacing="10"
       xmlns:fx="http://javafx.com/fxml"
       fx:controller="com.eventbooking.eventbookingapp.controller.BookingDialogController">
+
+    <padding>
+        <Insets top="20" right="20" bottom="20" left="20"/>
+    </padding>
 
     <Label text="🎫 Book Event Ticket" style="-fx-font-size: 16px; -fx-font-weight: bold;" />
 
@@ -19,8 +23,10 @@
     <Label text="Email Address:" />
     <TextField fx:id="emailField" promptText="Enter your email..." />
 
+    <Label text="Quantity:" />
+    <Spinner fx:id="ticketSpinner" min="1" max="10" initialValue="1" editable="true" />
     <HBox spacing="10" alignment="CENTER_RIGHT">
         <Button text="Cancel" onAction="#onCancel"/>
-        <Button text="Confirm Booking" onAction="#onConfirm"/>
+        <Button fx:id="confirmBookingButton" text="Confirm Booking" onAction="#onConfirm"/>
     </HBox>
 </VBox>

@@ -1,25 +1,68 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<?import javafx.scene.control.*?>
-<?import javafx.scene.layout.*?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.ListView?>
+<?import javafx.scene.control.ToolBar?>
+<?import javafx.scene.control.Tooltip?>
+<?import javafx.scene.control.ContextMenu?>
+<?import javafx.scene.control.MenuItem?>
+<?import javafx.scene.layout.BorderPane?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.Pane?>
+<?import javafx.scene.layout.VBox?>
 
-<BorderPane xmlns:fx="http://javafx.com/fxml"
-            fx:controller="com.eventbooking.eventbookingapp.controller.OrganizerController">
+<BorderPane xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.eventbooking.eventbookingapp.controller.OrganizerController">
 
     <top>
         <ToolBar>
-            <Label text="🎟 Organizer Dashboard" style="-fx-font-size: 18px; -fx-font-weight: bold;" />
+            <Label style="-fx-font-size: 18px; -fx-font-weight: bold;" text="🎟 Organizer Dashboard" />
             <Pane HBox.hgrow="ALWAYS" />
-            <Button text="Attendee View" onAction="#switchToAttendee" />
+            <Button onAction="#switchToAttendee" text="Attendee View" />
         </ToolBar>
     </top>
 
     <center>
-        <VBox alignment="CENTER" spacing="15">
-            <Label text="Organizer Area" style="-fx-font-size: 16px;" />
-            <Button text="Create Event" onAction="#openCreateEventDialog" />
-            <Button text="Capacity Full Warning" onAction="#openCapacityWarningDialog" />
-            <Button text="Event Ending Soon" onAction="#openEventEndingDialog" />
-        </VBox>
+        <HBox alignment="CENTER" spacing="20" style="-fx-padding: 20;">
+
+            <ListView fx:id="eventsListView" prefWidth="320.0" >
+                <contextMenu>
+                    <ContextMenu>
+                        <items>
+                            <MenuItem fx:id="editEventMenuItem" text="Edit Selected Event" />
+                            <MenuItem fx:id="deleteEventMenuItem" text="Delete Selected Event" />
+                            <MenuItem fx:id="toggleWaitlistMenuItem" text="Toggle Waitlist On/Off" />
+                            <MenuItem fx:id="toggleBookingMenuItem" text="Toggle Bookings Open/Close" />
+                        </items>
+                    </ContextMenu>
+                </contextMenu>
+            </ListView>
+
+            <VBox alignment="CENTER" prefHeight="0.0" prefWidth="194.0" spacing="15">
+                <Label style="-fx-font-size: 16px;" text="Organizer Actions" />
+
+                <Button fx:id="createEventBtn" onAction="#openCreateEventDialog" text="Create Event" prefWidth="194.0">
+                    <tooltip>
+                        <Tooltip text="Open a dialog to create a new event (name + capacity)" />
+                    </tooltip>
+                </Button>
+
+                <Button fx:id="viewAttendeesBtn" onAction="#openAttendeeListDialog" text="View Attendees" prefWidth="194.0" />
+
+                <Button fx:id="capacityWarningBtn" onAction="#openCapacityWarningDialog" text="Send Capacity Warning" prefWidth="194.0">
+                    <tooltip>
+                        <Tooltip text="Show a capacity warning dialog when an event is full" />
+                    </tooltip>
+                </Button>
+
+                <Button fx:id="eventEndingBtn" onAction="#openEventEndingDialog" prefWidth="194.0" text="Send Event End Warning">
+                    <tooltip>
+                        <Tooltip text="Show a confirmation dialog for events ending soon" />
+                    </tooltip>
+                </Button>
+
+                <Label fx:id="selectedEventDetails" text="Select an event to see details" wrapText="true" />
+            </VBox>
+        </HBox>
     </center>
 </BorderPane>

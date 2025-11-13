@@ -6,6 +6,7 @@ import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import java.time.LocalDateTime;
+import org.json.JSONObject;
 
 public class SupabaseService {
     private static final String SUPABASE_URL = System.getenv("SUPABASE_URL");
@@ -37,15 +38,17 @@ public class SupabaseService {
     }
 
     public static String saveEvent(String name, int capacity, LocalDateTime eventDate, String posterUrl, String synopsis) {
-        String escapedSynopsis = synopsis.replace("\"", "\\\"").replace("\n", "\\n");
-        String json = "{\"name\":\"" + name + "\", \"capacity\":" + capacity +
-                ", \"event_date\":\"" + eventDate.toString() + "\"" +
-                ", \"poster_url\":\"" + posterUrl + "\"" +
-                ", \"synopsis\":\"" + escapedSynopsis + "\"}";
+        JSONObject json = new JSONObject();
+        json.put("name", name);
+        json.put("capacity", capacity);
+        json.put("event_date", eventDate.toString());
+        json.put("poster_url", posterUrl);
+        json.put("synopsis", synopsis);
+        String jsonString = json.toString();
 
         try {
             HttpRequest request = createRequestBuilder("events?select=*")
-                    .POST(HttpRequest.BodyPublishers.ofString(json))
+                    .POST(HttpRequest.BodyPublishers.ofString(jsonString))
                     .build();
 
             HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
@@ -62,14 +65,16 @@ public class SupabaseService {
     }
 
     public static String saveTicket(String eventId, String name, String email, String ticketCode) {
-        String json = String.format(
-                "{\"events_id\":\"%s\", \"attendee_name\":\"%s\", \"email\":\"%s\", \"ticket_code\":\"%s\"}",
-                eventId, name, email, ticketCode
-        );
+        JSONObject json = new JSONObject();
+        json.put("events_id", eventId);
+        json.put("attendee_name", name);
+        json.put("email", email);
+        json.put("ticket_code", ticketCode);
+        String jsonString = json.toString();
 
         try {
             HttpRequest request = createRequestBuilder("tickets")
-                    .POST(HttpRequest.BodyPublishers.ofString(json))
+                    .POST(HttpRequest.BodyPublishers.ofString(jsonString))
                     .build();
 
             HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
@@ -107,16 +112,18 @@ public class SupabaseService {
     }
 
     public static boolean updateEvent(String eventId, String name, int capacity, LocalDateTime eventDate, String posterUrl, String synopsis) {
-        String escapedSynopsis = synopsis.replace("\"", "\\\"").replace("\n", "\\n");
-        String json = "{\"name\":\"" + name + "\", \"capacity\":" + capacity +
-                ", \"event_date\":\"" + eventDate.toString() + "\"" +
-                ", \"poster_url\":\"" + posterUrl + "\"" +
-                ", \"synopsis\":\"" + escapedSynopsis + "\"}";
+        JSONObject json = new JSONObject();
+        json.put("name", name);
+        json.put("capacity", capacity);
+        json.put("event_date", eventDate.toString());
+        json.put("poster_url", posterUrl);
+        json.put("synopsis", synopsis);
+        String jsonString = json.toString();
 
         try {
             HttpRequest request = createRequestBuilder("events?events_id=eq." + eventId)
                     .header("Prefer", "return=minimal")
-                    .method("PATCH", HttpRequest.BodyPublishers.ofString(json))
+                    .method("PATCH", HttpRequest.BodyPublishers.ofString(jsonString))
                     .build();
 
             HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
@@ -146,13 +153,15 @@ public class SupabaseService {
     }
 
     public static boolean updateEventFlags(String eventId, boolean waitlistEnabled, boolean acceptingBookings) {
-        String json = "{\"waitlist_enabled\":" + waitlistEnabled +
-                ",\"accepting_bookings\":" + acceptingBookings + "}";
+        JSONObject json = new JSONObject();
+        json.put("waitlist_enabled", waitlistEnabled);
+        json.put("accepting_bookings", acceptingBookings);
+        String jsonString = json.toString();
 
         try {
             HttpRequest request = createRequestBuilder("events?events_id=eq." + eventId)
                     .header("Prefer", "return=minimal")
-                    .method("PATCH", HttpRequest.BodyPublishers.ofString(json))
+                    .method("PATCH", HttpRequest.BodyPublishers.ofString(jsonString))
                     .build();
 
             HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());

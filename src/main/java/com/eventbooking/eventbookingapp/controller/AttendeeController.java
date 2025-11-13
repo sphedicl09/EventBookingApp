@@ -1,4 +1,5 @@
 package com.eventbooking.eventbookingapp.controller;
+
 import com.eventbooking.eventbookingapp.model.Event;
 import com.eventbooking.eventbookingapp.model.EventManager;
 import javafx.event.ActionEvent;
@@ -11,7 +12,10 @@ import javafx.stage.Stage;
 import java.io.IOException;
 import javafx.scene.control.Tooltip;
 import javafx.scene.control.ListCell;
-import com.eventbooking.eventbookingapp.model.Event;
+import com.eventbooking.eventbookingapp.util.ViewSwitcher;
+import javafx.scene.input.MouseEvent;
+import javafx.stage.Modality;
+import com.eventbooking.eventbookingapp.controller.EventDetailsController;
 
 public class AttendeeController {
 
@@ -20,6 +24,7 @@ public class AttendeeController {
 
     public void initialize() {
         eventList.setItems(EventManager.getEvents());
+
         eventList.setCellFactory(lv -> new ListCell<Event>() {
             private Tooltip tooltip = new Tooltip();
 
@@ -46,12 +51,44 @@ public class AttendeeController {
                 }
             }
         });
+
+        eventList.setOnMouseClicked(event -> {
+            if (event.getClickCount() == 2) {
+                Event selected = eventList.getSelectionModel().getSelectedItem();
+                if (selected != null) {
+                    showEventDetailsWindow(selected);
+                }
+            }
+        });
+    }
+
+    private void showEventDetailsWindow(Event event) {
+        try {
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("/com/eventbooking/eventbookingapp/event-details-view.fxml"));
+            Stage dialogStage = new Stage();
+            dialogStage.setTitle("Event Details: " + event.getName());
+            dialogStage.initModality(Modality.APPLICATION_MODAL);
+            dialogStage.initOwner(eventList.getScene().getWindow());
+
+            Scene scene = new Scene(loader.load());
+            scene.getStylesheets().add(getClass().getResource("/com/eventbooking/eventbookingapp/styles.css").toExternalForm());
+            dialogStage.setScene(scene);
+            EventDetailsController controller = loader.getController();
+            controller.loadEventData(event);
+
+            dialogStage.showAndWait();
+        } catch (IOException e) {
+            e.printStackTrace();
+            Alert alert = new Alert(Alert.AlertType.ERROR);
+            alert.setTitle("Load Error");
+            alert.setHeaderText(null);
+            alert.setContentText("Could not load the event details view.");
+            alert.showAndWait();
+        }
     }
 
     public void switchToOrganizer(ActionEvent event) throws IOException {
-        FXMLLoader loader = new FXMLLoader(getClass().getResource("/com/eventbooking/eventbookingapp/organizer-view.fxml"));
-        Stage stage = (Stage) ((javafx.scene.Node) event.getSource()).getScene().getWindow();
-        stage.setScene(new Scene(loader.load(), 800, 600));
+        ViewSwitcher.switchScene(event, "/com/eventbooking/eventbookingapp/organizer-view.fxml");
     }
 
     @FXML

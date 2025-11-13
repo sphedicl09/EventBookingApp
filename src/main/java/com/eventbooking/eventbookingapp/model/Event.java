@@ -11,8 +11,10 @@ public class Event {
     private int bookedCount = 0;
     private boolean waitlistEnabled = false;
     private boolean acceptingBookings = true;
+    private String posterUrl;
+    private String synopsis;
 
-    public Event(String id, String name, int capacity, int bookedCount, boolean waitlistEnabled, boolean acceptingBookings, LocalDateTime eventDate) {
+    public Event(String id, String name, int capacity, int bookedCount, boolean waitlistEnabled, boolean acceptingBookings, LocalDateTime eventDate, String posterUrl, String synopsis) {
         this.id = id;
         this.name = name;
         this.capacity = capacity;
@@ -20,10 +22,10 @@ public class Event {
         this.waitlistEnabled = waitlistEnabled;
         this.acceptingBookings = acceptingBookings;
         this.eventDate = eventDate;
+        this.posterUrl = posterUrl;
+        this.synopsis = synopsis;
     }
 
-
-    //Getters
     public String getId() { return id; }
     public String getName() { return name; }
     public int getCapacity() { return capacity; }
@@ -32,34 +34,23 @@ public class Event {
     public boolean isAcceptingBookings() { return acceptingBookings; }
     public LocalDateTime getEventDate() { return eventDate; }
     public void setEventDate(LocalDateTime eventDate) { this.eventDate = eventDate; }
+    public String getPosterUrl() { return posterUrl; }
+    public String getSynopsis() { return synopsis; }
 
-    //Setters
-    public void setName(String name) {
-        this.name = name;
-    }
-
-    public void setCapacity(int capacity) {
-        this.capacity = capacity;
-    }
-
-    public void setBookedCount(int bookedCount) {
-        this.bookedCount = bookedCount;
-    }
-
-    public void setWaitlistEnabled(boolean waitlistEnabled) {
-        this.waitlistEnabled = waitlistEnabled;
-    }
-
-    public void setAcceptingBookings(boolean acceptingBookings) {
-        this.acceptingBookings = acceptingBookings;
-    }
+    public void setName(String name) {this.name = name;}
+    public void setCapacity(int capacity) {this.capacity = capacity;}
+    public void setBookedCount(int bookedCount) {this.bookedCount = bookedCount;}
+    public void setWaitlistEnabled(boolean waitlistEnabled) {this.waitlistEnabled = waitlistEnabled;}
+    public void setAcceptingBookings(boolean acceptingBookings) {this.acceptingBookings = acceptingBookings;}
+    public void setPosterUrl(String posterUrl) {this.posterUrl = posterUrl;}
+    public void setSynopsis(String synopsis) {this.synopsis = synopsis;}
 
 
     @Override
     public String toString() {
         String dateStr = "";
         if (eventDate != null) {
-            dateStr = " on " + eventDate.format(DateTimeFormatter.ofPattern("MMM dd, yyyy"));
+            dateStr = " on " + eventDate.format(DateTimeFormatter.ofPattern("MMM dd, yyyy @ h:mm a"));
         }
         return name + " (" + bookedCount + "/" + capacity + ")" + dateStr
                 + (acceptingBookings ? "" : " [Closed]")

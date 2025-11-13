@@ -18,6 +18,7 @@ public class Main extends Application {
                 stage.close();
             }
         });
+        scene.getStylesheets().add(getClass().getResource("/com/eventbooking/eventbookingapp/styles.css").toExternalForm());
         stage.setTitle("Event Booking System");
         stage.setScene(scene);
         stage.show();

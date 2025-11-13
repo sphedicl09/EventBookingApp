@@ -36,9 +36,12 @@ public class SupabaseService {
         }
     }
 
-    public static String saveEvent(String name, int capacity, LocalDateTime eventDate) {
+    public static String saveEvent(String name, int capacity, LocalDateTime eventDate, String posterUrl, String synopsis) {
+        String escapedSynopsis = synopsis.replace("\"", "\\\"").replace("\n", "\\n");
         String json = "{\"name\":\"" + name + "\", \"capacity\":" + capacity +
-                ", \"event_date\":\"" + eventDate.toString() + "\"}";
+                ", \"event_date\":\"" + eventDate.toString() + "\"" +
+                ", \"poster_url\":\"" + posterUrl + "\"" +
+                ", \"synopsis\":\"" + escapedSynopsis + "\"}";
 
         try {
             HttpRequest request = createRequestBuilder("events?select=*")
@@ -47,7 +50,7 @@ public class SupabaseService {
 
             HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
 
-            if (response.statusCode() == 201) { // 201 Created
+            if (response.statusCode() == 201) {
                 return response.body();
             } else {
                 return "Error: " + response.statusCode();
@@ -103,9 +106,12 @@ public class SupabaseService {
         }
     }
 
-    public static boolean updateEvent(String eventId, String name, int capacity, LocalDateTime eventDate) {
+    public static boolean updateEvent(String eventId, String name, int capacity, LocalDateTime eventDate, String posterUrl, String synopsis) {
+        String escapedSynopsis = synopsis.replace("\"", "\\\"").replace("\n", "\\n");
         String json = "{\"name\":\"" + name + "\", \"capacity\":" + capacity +
-                ", \"event_date\":\"" + eventDate.toString() + "\"}";
+                ", \"event_date\":\"" + eventDate.toString() + "\"" +
+                ", \"poster_url\":\"" + posterUrl + "\"" +
+                ", \"synopsis\":\"" + escapedSynopsis + "\"}";
 
         try {
             HttpRequest request = createRequestBuilder("events?events_id=eq." + eventId)

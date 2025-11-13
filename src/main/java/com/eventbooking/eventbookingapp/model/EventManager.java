@@ -15,17 +15,17 @@ public class EventManager {
         return events;
     }
 
-    public static boolean addEvent(String eventName, int capacity, LocalDateTime eventDate) {
+    public static boolean addEvent(String eventName, int capacity, LocalDateTime eventDate, String posterUrl, String synopsis) {
         if (eventName == null || eventName.trim().isEmpty()) {
             return false;
         }
 
         try {
-            String response = SupabaseService.saveEvent(eventName, capacity, eventDate);
+            String response = SupabaseService.saveEvent(eventName, capacity, eventDate, posterUrl, synopsis);
 
             if (!response.startsWith("[")) {
                 System.out.println("⚠️ Supabase save event failed: " + response);
-                return false; // Return false
+                return false;
             }
 
             JSONArray array = new JSONArray(response);
@@ -34,8 +34,10 @@ public class EventManager {
                 String id = obj.getString("events_id");
                 String name = obj.getString("name");
                 int cap = obj.getInt("capacity");
+                String poster = obj.optString("poster_url", null);
+                String syn = obj.optString("synopsis", "");
 
-                events.add(new Event(id, name, cap, 0, false, true, eventDate));
+                events.add(new Event(id, name, cap, 0, false, true, eventDate, posterUrl, synopsis));
                 System.out.println("✅ Event saved to Supabase and added to local list.");
                 return true;
             }
@@ -51,8 +53,8 @@ public class EventManager {
         try {
             String response = SupabaseService.fetchEvents("events?select=*,tickets(count)");
             JSONArray array = new JSONArray(response);
-            events.clear();
 
+            events.clear();
             for (int i = 0; i < array.length(); i++) {
                 JSONObject obj = array.getJSONObject(i);
                 String id = obj.getString("events_id");
@@ -67,13 +69,16 @@ public class EventManager {
                     eventDate = ZonedDateTime.parse(dateStr).toLocalDateTime();
                 }
 
+                String posterUrl = obj.optString("poster_url", null);
+                String synopsis = obj.optString("synopsis", "");
+
                 int booked = 0;
                 JSONArray ticketsArray = obj.optJSONArray("tickets");
                 if (ticketsArray != null && ticketsArray.length() > 0) {
                     booked = ticketsArray.getJSONObject(0).getInt("count");
                 }
 
-                events.add(new Event(id, name, capacity, booked, waitlist, accepting, eventDate));
+                events.add(new Event(id, name, capacity, booked, waitlist, accepting, eventDate, posterUrl, synopsis));
             }
             System.out.println("✅ Events loaded from Supabase: " + events.size());
         } catch (Exception e) {
@@ -82,10 +87,12 @@ public class EventManager {
         }
     }
 
-    public static void updateEvent(Event event, String newName, int newCapacity, LocalDateTime eventDate) {
+    public static void updateEvent(Event event, String newName, int newCapacity, LocalDateTime eventDate, String posterUrl, String synopsis) {
         event.setName(newName);
         event.setCapacity(newCapacity);
         event.setEventDate(eventDate);
+        event.setPosterUrl(posterUrl);
+        event.setSynopsis(synopsis);
     }
 
     public static void removeEvent(Event event) {

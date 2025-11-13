@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.image.ImageView?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.VBox?>
+<?import javafx.scene.text.Font?>
+
+<HBox alignment="TOP_LEFT" maxHeight="-Infinity" maxWidth="-Infinity" spacing="20.0"
+      style="-fx-background-color: #2b2b2b; -fx-padding: 20;"
+      xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1"
+      fx:controller="com.eventbooking.eventbookingapp.controller.EventDetailsController">
+
+    <ImageView fx:id="posterView" fitHeight="300.0" fitWidth="200.0" pickOnBounds="true" preserveRatio="true" />
+
+    <VBox spacing="10.0">
+        <Label fx:id="eventNameLabel" text="Event Name" textFill="white">
+            <font>
+                <Font name="Roboto Bold" size="24.0" />
+            </font>
+        </Label>
+        <Label fx:id="eventDateLabel" text="Date: Nov 13, 2025" textFill="#e0e0e0">
+            <font>
+                <Font size="16.0" />
+            </font>
+        </Label>
+        <Label fx:id="eventCapacityLabel" text="Booked: 5/50" textFill="#e0e0e0">
+            <font>
+                <Font size="16.0" />
+            </font>
+        </Label>
+        <Label fx:id="eventStatusLabel" text="Status: Open" textFill="#e0e0e0">
+            <font>
+                <Font size="16.0" />
+            </font>
+        </Label>
+
+        <Label text="Synopsis:" textFill="white" underline="true">
+            <font>
+                <Font name="Roboto Bold" size="16.0" />
+            </font>
+            <VBox.margin>
+                <Insets top="10.0" />
+            </VBox.margin>
+        </Label>
+        <Label fx:id="eventSynopsisLabel" alignment="TOP_LEFT" prefHeight="150.0"
+               text="Synopsis details will go here..." textFill="#e0e0e0" wrapText="true" />
+    </VBox>
+</HBox>

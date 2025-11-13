@@ -21,11 +21,17 @@ import java.time.LocalDateTime;
 import java.util.Optional;
 import javafx.scene.control.Tooltip;
 import javafx.scene.control.ListCell;
+import de.jensd.fx.glyphs.fontawesome.FontAwesomeIcon;
+import de.jensd.fx.glyphs.fontawesome.FontAwesomeIconView;
+import com.eventbooking.eventbookingapp.util.ViewSwitcher;
+import javafx.scene.input.MouseEvent;
 
 public class OrganizerController {
 
     @FXML
     private ListView<Event> eventsListView;
+    @FXML
+    private Button createEventBtn;
     @FXML
     private MenuItem editEventMenuItem;
     @FXML
@@ -34,6 +40,7 @@ public class OrganizerController {
     private MenuItem toggleWaitlistMenuItem;
     @FXML
     private MenuItem toggleBookingMenuItem;
+
 
     @FXML
     public void initialize() {
@@ -44,8 +51,11 @@ public class OrganizerController {
                 return null;
             }
         };
+        createEventBtn.setGraphic(new FontAwesomeIconView(FontAwesomeIcon.PLUS));
+
         loadEventsTask.setOnSucceeded(e -> {
             eventsListView.setItems(EventManager.getEvents());
+
             eventsListView.setCellFactory(lv -> new ListCell<Event>() {
                 private Tooltip tooltip = new Tooltip();
 
@@ -79,6 +89,37 @@ public class OrganizerController {
         deleteEventMenuItem.setOnAction(e -> handleDeleteEvent());
         toggleWaitlistMenuItem.setOnAction(e -> handleToggleWaitlist());
         toggleBookingMenuItem.setOnAction(e -> handleToggleBooking());
+        eventsListView.setOnMouseClicked(event -> {
+            if (event.getClickCount() == 2) {
+                Event selected = eventsListView.getSelectionModel().getSelectedItem();
+                if (selected != null) {
+                    showEventDetailsWindow(selected);
+                }
+            }
+        });
+    }
+
+    private void showEventDetailsWindow(Event event) {
+        try {
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("/com/eventbooking/eventbookingapp/event-details-view.fxml"));
+            Stage dialogStage = new Stage();
+            dialogStage.setTitle("Event Details: " + event.getName());
+            dialogStage.initModality(Modality.APPLICATION_MODAL);
+            dialogStage.initOwner(eventsListView.getScene().getWindow());
+
+            Scene scene = new Scene(loader.load());
+            scene.getStylesheets().add(getClass().getResource("/com/eventbooking/eventbookingapp/styles.css").toExternalForm());
+            dialogStage.setScene(scene);
+
+            EventDetailsController controller = loader.getController();
+            controller.loadEventData(event);
+
+            dialogStage.showAndWait();
+
+        } catch (IOException e) {
+            e.printStackTrace();
+            showAlert(AlertType.ERROR, "Load Error", "Could not load the event details view.");
+        }
     }
 
     private void handleDeleteEvent() {
@@ -157,12 +198,39 @@ public class OrganizerController {
 
         DatePicker eventDatePicker = new DatePicker();
         eventDatePicker.setPromptText("Select Event Date");
+        eventDatePicker.setPrefWidth(150);
+
+        Spinner<Integer> hourSpinner = new Spinner<>(0, 23, 12);
+        hourSpinner.setPrefWidth(70);
+
+        Spinner<Integer> minuteSpinner = new Spinner<>(0, 59, 0);
+        minuteSpinner.setPrefWidth(70);
+
+        HBox timeBox = new HBox(10, new Label("Time (HH:mm):"), hourSpinner, minuteSpinner);
+        timeBox.setAlignment(Pos.CENTER_LEFT);
+
+        TextField posterUrlField = new TextField();
+        posterUrlField.setPromptText("Enter Poster Image URL (e.g., https://...)");
+
+        TextArea synopsisArea = new TextArea();
+        synopsisArea.setPromptText("Enter event synopsis/description...");
+        synopsisArea.setWrapText(true);
+        synopsisArea.setPrefHeight(100);
 
         if (isEditMode) {
             nameField.setText(eventToEdit.getName());
             capacityField.setText(String.valueOf(eventToEdit.getCapacity()));
+
             if (eventToEdit.getEventDate() != null) {
                 eventDatePicker.setValue(eventToEdit.getEventDate().toLocalDate());
+                hourSpinner.getValueFactory().setValue(eventToEdit.getEventDate().getHour());
+                minuteSpinner.getValueFactory().setValue(eventToEdit.getEventDate().getMinute());
+            }
+            if (eventToEdit.getPosterUrl() != null) {
+                posterUrlField.setText(eventToEdit.getPosterUrl());
+            }
+            if (eventToEdit.getSynopsis() != null) {
+                synopsisArea.setText(eventToEdit.getSynopsis());
             }
         }
 
@@ -173,6 +241,10 @@ public class OrganizerController {
             String eventName = nameField.getText();
             String capacityText = capacityField.getText();
             LocalDate date = eventDatePicker.getValue();
+            int hour = hourSpinner.getValue();
+            int minute = minuteSpinner.getValue();
+            String posterUrl = posterUrlField.getText();
+            String synopsis = synopsisArea.getText();
 
             if (date == null) {
                 showAlert(AlertType.ERROR, "Invalid Input", "Please select a date for the event.", dialog);
@@ -181,15 +253,15 @@ public class OrganizerController {
 
             try {
                 int capacity = Integer.parseInt(capacityText);
-                LocalDateTime eventDateTime = date.atTime(12, 0);
+                LocalDateTime eventDateTime = date.atTime(hour, minute);
 
                 Task<Boolean> dbTask = new Task<>() {
                     @Override
                     protected Boolean call() throws Exception {
                         if (isEditMode) {
-                            return SupabaseService.updateEvent(eventToEdit.getId(), eventName, capacity, eventDateTime);
+                            return SupabaseService.updateEvent(eventToEdit.getId(), eventName, capacity, eventDateTime, posterUrl, synopsis);
                         } else {
-                            return EventManager.addEvent(eventName, capacity, eventDateTime);
+                            return EventManager.addEvent(eventName, capacity, eventDateTime, posterUrl, synopsis);
                         }
                     }
                 };
@@ -197,7 +269,7 @@ public class OrganizerController {
                 dbTask.setOnSucceeded(taskResult -> {
                     if (dbTask.getValue()) {
                         if (isEditMode) {
-                            EventManager.updateEvent(eventToEdit, eventName, capacity, eventDateTime);
+                            EventManager.updateEvent(eventToEdit, eventName, capacity, eventDateTime, posterUrl, synopsis);
                             eventsListView.refresh();
                         }
                         dialog.close();
@@ -217,11 +289,11 @@ public class OrganizerController {
             }
         });
 
-        VBox layout = new VBox(10, titleLabel, nameField, capacityField, eventDatePicker, confirmBtn);
+        VBox layout = new VBox(10, titleLabel, nameField, capacityField, eventDatePicker, timeBox, posterUrlField, synopsisArea, confirmBtn);
         layout.setAlignment(Pos.CENTER);
         layout.setStyle("-fx-background-color: #1e1e1e; -fx-padding: 20;");
 
-        Scene scene = new Scene(layout, 300, 250); // Increased height for the DatePicker
+        Scene scene = new Scene(layout, 400, 450);
         dialog.setScene(scene);
         dialog.showAndWait();
     }
@@ -269,9 +341,7 @@ public class OrganizerController {
     }
 
     public void switchToAttendee(ActionEvent event) throws IOException {
-        FXMLLoader loader = new FXMLLoader(getClass().getResource("/com/eventbooking/eventbookingapp/attendee-view.fxml"));
-        Stage stage = (Stage) ((javafx.scene.Node) event.getSource()).getScene().getWindow();
-        stage.setScene(new Scene(loader.load(), 800, 600));
+        ViewSwitcher.switchScene(event, "/com/eventbooking/eventbookingapp/attendee-view.fxml");
     }
 
     public void openCapacityWarningDialog(ActionEvent event) {

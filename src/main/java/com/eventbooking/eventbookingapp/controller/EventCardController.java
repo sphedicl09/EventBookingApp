@@ -36,7 +36,7 @@ public class EventCardController {
                 System.out.println("Failed to load image from URL: " + event.getPosterUrl());
             }
         } else {
-            
+
         }
 
         if (event.getBookedCount() >= event.getCapacity()) {

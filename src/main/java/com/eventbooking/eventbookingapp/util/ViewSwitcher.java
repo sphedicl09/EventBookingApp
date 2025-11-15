@@ -5,8 +5,9 @@ import javafx.fxml.FXMLLoader;
 import javafx.scene.Node;
 import javafx.scene.Scene;
 import javafx.stage.Stage;
-
 import java.io.IOException;
+import javafx.scene.input.KeyCode;
+import javafx.scene.input.KeyEvent;
 
 public class ViewSwitcher {
 
@@ -18,6 +19,11 @@ public class ViewSwitcher {
         Scene scene = new Scene(fxmlLoader.load(), 800, 600);
         String stylesheet = ViewSwitcher.class.getResource(STYLESHEET_PATH).toExternalForm();
         scene.getStylesheets().add(stylesheet);
+        scene.addEventHandler(KeyEvent.KEY_PRESSED, e -> {
+            if (e.isAltDown() && e.getCode() == KeyCode.C) {
+                stage.close();
+            }
+        });
         stage.setScene(scene);
     }
 }
